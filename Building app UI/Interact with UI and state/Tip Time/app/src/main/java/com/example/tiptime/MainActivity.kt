@@ -1,18 +1,31 @@
 package com.example.tiptime
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.*
+import androidx.annotation.VisibleForTesting
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.Surface
+import androidx.compose.material.Switch
+import androidx.compose.material.SwitchDefaults
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,96 +47,86 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             TipTimeTheme {
-                TipTimeApp()
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    TipTimeScreen()
+                }
             }
         }
     }
 }
 
 @Composable
-fun TipTimeApp() {
-    // A surface container using the 'background' color from the theme
-    Surface(
+fun TipTimeScreen() {
+    var amountInput by remember { mutableStateOf("") }
+    var tipInput by remember { mutableStateOf("") }
+    var roundUp by remember { mutableStateOf(false) }
 
+    val amount = amountInput.toDoubleOrNull() ?: 0.0
+    val tipPercent = tipInput.toDoubleOrNull() ?: 0.0
+    val tip = calculateTip(amount, tipPercent, roundUp)
+
+    val focusManager = LocalFocusManager.current
+
+    Column(
+        modifier = Modifier.padding(32.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        var amountInput by remember { mutableStateOf("") }
-        var roundUp by remember { mutableStateOf(false) }
-        var tipInput by remember { mutableStateOf("") }
-
-        val amount = amountInput.toDoubleOrNull() ?: 0.0
-        val tipPercent = tipInput.toDoubleOrNull() ?: 0.0
-        val tip = calculateTip(amount, tipPercent, roundUp)
-
-        val focusManager = LocalFocusManager.current
-
-
-
-        Column(
-            modifier = Modifier.padding(32.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.calculate_tip),
-                fontSize = 24.sp,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            EditNumberField(
-                label = R.string.bill_amount,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Next
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                ),
-                value = amountInput,
-                onvalueChange = { amountInput = it }
-            )
-            EditNumberField(
-                label = R.string.how_was_the_service,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = { focusManager.clearFocus() }
-                ),
-                value = tipInput,
-                onvalueChange = { tipInput = it }
-            )
-            RoundTheTipRow(
-                roundUp = roundUp,
-                onRoundUpChanged = { roundUp = it },
-            )
-            Spacer(Modifier.height(24.dp))
-            Text(
-                text = stringResource(R.string.tip_amount, tip),
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        Text(
+            text = stringResource(R.string.calculate_tip),
+            fontSize = 24.sp,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+        Spacer(Modifier.height(16.dp))
+        EditNumberField(
+            label = R.string.cost_of_service,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+            ),
+            value = amountInput,
+            onValueChanged = { amountInput = it }
+        )
+        EditNumberField(
+            label = R.string.how_was_the_service,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { focusManager.clearFocus() }
+            ),
+            value = tipInput,
+            onValueChanged = { tipInput = it }
+        )
+        RoundTheTipRow(roundUp = roundUp, onRoundUpChanged = { roundUp = it })
+        Spacer(Modifier.height(24.dp))
+        Text(
+            text = stringResource(R.string.tip_amount, tip),
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
-
-@SuppressLint("UnrememberedMutableState")
 @Composable
 fun EditNumberField(
     @StringRes label: Int,
     keyboardOptions: KeyboardOptions,
     keyboardActions: KeyboardActions,
     value: String,
-    onvalueChange: (String) -> Unit,
+    onValueChanged: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     TextField(
         value = value,
-        onValueChange = onvalueChange,
-        label = { Text(stringResource(label)) },
-        modifier = modifier.fillMaxWidth(),
         singleLine = true,
+        modifier = modifier.fillMaxWidth(),
+        onValueChange = onValueChanged,
+        label = { Text(stringResource(label)) },
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions
     )
@@ -131,46 +134,47 @@ fun EditNumberField(
 
 @Composable
 fun RoundTheTipRow(
-    modifier: Modifier = Modifier,
     roundUp: Boolean,
-    onRoundUpChanged: (Boolean) -> Unit
+    onRoundUpChanged: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .size(48.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = stringResource(id = R.string.round_up_tip))
+        Text(text = stringResource(R.string.round_up_tip))
         Switch(
+            modifier = modifier
+                .fillMaxWidth()
+                .wrapContentWidth(Alignment.End),
             checked = roundUp,
             onCheckedChange = onRoundUpChanged,
             colors = SwitchDefaults.colors(
                 uncheckedThumbColor = Color.DarkGray
-            ),
-            modifier = modifier
-                .fillMaxWidth()
-                .wrapContentWidth(Alignment.End)
+            )
         )
     }
 }
 
-@Composable
-private fun calculateTip(
-    amount: Double,
-    tipPercent: Double = 15.0,
-    roundUp: Boolean
-): String {
+/**
+ * Calculates the tip based on the user input and format the tip amount
+ * according to the local currency and display it onscreen.
+ * Example would be "$10.00".
+ */
+@VisibleForTesting
+fun calculateTip(amount: Double, tipPercent: Double = 15.0, roundUp: Boolean): String {
     var tip = tipPercent / 100 * amount
     if (roundUp)
         tip = kotlin.math.ceil(tip)
     return NumberFormat.getCurrencyInstance().format(tip)
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun TipTimePreview() {
+fun TipTimeScreenPreview() {
     TipTimeTheme {
-        TipTimeApp()
+        TipTimeScreen()
     }
 }
