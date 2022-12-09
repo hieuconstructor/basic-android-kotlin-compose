@@ -47,16 +47,16 @@ fun TipTimeApp() {
 
     ) {
         var amountInput by remember { mutableStateOf("") }
-        val amount = amountInput.toDoubleOrNull() ?: 0.0
-
+        var roundUp by remember { mutableStateOf(false) }
         var tipInput by remember { mutableStateOf("") }
-        val tipPercent = tipInput.toDoubleOrNull() ?: 0.0
 
-        val tip = calculateTip(amount, tipPercent)
+        val amount = amountInput.toDoubleOrNull() ?: 0.0
+        val tipPercent = tipInput.toDoubleOrNull() ?: 0.0
+        val tip = calculateTip(amount, tipPercent, roundUp)
 
         val focusManager = LocalFocusManager.current
 
-        var roundUp by remember { mutableStateOf(false) }
+
 
         Column(
             modifier = Modifier.padding(32.dp),
@@ -92,7 +92,10 @@ fun TipTimeApp() {
                 value = tipInput,
                 onvalueChange = { tipInput = it }
             )
-            RoundTheTipRow(roundUp = roundUp, onRoundUpChanged = { roundUp = it })
+            RoundTheTipRow(
+                roundUp = roundUp,
+                onRoundUpChanged = { roundUp = it },
+            )
             Spacer(Modifier.height(24.dp))
             Text(
                 text = stringResource(R.string.tip_amount, tip),
@@ -104,14 +107,6 @@ fun TipTimeApp() {
     }
 }
 
-@Composable
-private fun calculateTip(
-    amount: Double,
-    tipPercent: Double = 15.0
-): String {
-    val tip = tipPercent / 100 * amount
-    return NumberFormat.getCurrencyInstance().format(tip)
-}
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
@@ -158,6 +153,18 @@ fun RoundTheTipRow(
                 .wrapContentWidth(Alignment.End)
         )
     }
+}
+
+@Composable
+private fun calculateTip(
+    amount: Double,
+    tipPercent: Double = 15.0,
+    roundUp: Boolean
+): String {
+    var tip = tipPercent / 100 * amount
+    if (roundUp)
+        tip = kotlin.math.ceil(tip)
+    return NumberFormat.getCurrencyInstance().format(tip)
 }
 
 @Preview(showBackground = true)
