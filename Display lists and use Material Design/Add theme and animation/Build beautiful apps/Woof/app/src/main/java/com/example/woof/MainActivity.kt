@@ -5,6 +5,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -12,7 +16,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -22,6 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.woof.data.Dog
 import com.example.woof.data.dogs
+import com.example.woof.ui.theme.Green50
 import com.example.woof.ui.theme.WoofTheme
 
 class MainActivity : ComponentActivity() {
@@ -34,14 +42,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    DogItem(
-                        dog = Dog(
-                            R.drawable.bella,
-                            R.string.dog_name_1,
-                            5,
-                            R.string.dog_description_1
-                        )
-                    )
+                    WoofApp()
                 }
             }
         }
@@ -66,9 +67,9 @@ fun WoofApp() {
 @Composable
 fun WoofTopAppBar(modifier: Modifier = Modifier) {
     Row(
-        modifier = Modifier
-        .background(color = MaterialTheme.colors.primary)
-        .fillMaxWidth()
+        modifier = modifier
+            .background(color = MaterialTheme.colors.primary)
+            .fillMaxWidth()
     ) {
         Image(
             modifier = Modifier
@@ -83,17 +84,35 @@ fun WoofTopAppBar(modifier: Modifier = Modifier) {
 
 @Composable
 fun DogItem(dog: Dog, modifier: Modifier = Modifier) {
+    var expanded by remember {
+        mutableStateOf(false)
+    }
     Card(
-        modifier = Modifier.padding(8.dp),
+        modifier = modifier.padding(8.dp),
         elevation = 4.dp
     ) {
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
+                .animateContentSize(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow
+                    )
+                )
         ) {
-            DogIcon(dogIcon = dog.imageResourceId)
-            DogInformation(dogName = dog.name, dogAge = dog.age)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                DogIcon(dogIcon = dog.imageResourceId)
+                DogInformation(dogName = dog.name, dogAge = dog.age)
+                Spacer(modifier = Modifier.weight(1f))
+                DogItemButton(expanded = expanded, onClick = { expanded = !expanded })
+            }
+            if(expanded) {
+                DogHobby(dogHobby = dog.hobbies)
+            }
         }
     }
 }
@@ -127,21 +146,50 @@ fun DogInformation(@StringRes dogName: Int, dogAge: Int, modifier: Modifier = Mo
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun DogItemPreview() {
-//    WoofTheme {
-//        DogItem(dog = Dog(R.drawable.bella, R.string.dog_name_1, 5, R.string.dog_description_1))
-//    }
-//}
+@Composable
+private fun DogItemButton(
+    expanded: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    IconButton(onClick = onClick) {
+        Icon(
+            imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+            tint = MaterialTheme.colors.secondary,
+            contentDescription = stringResource(id = R.string.expand_button_content_description)
+        )
+    }
+}
 
-//@Preview
-//@Composable
-//fun WoofAppPrevew() {
-//    WoofTheme(darkTheme = false) {
-//        WoofApp()
-//    }
-//}
+@Composable
+fun DogHobby(@StringRes dogHobby: Int, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.padding(
+            start = 16.dp,
+            top = 8.dp,
+            bottom = 16.dp,
+            end = 16.dp
+        )
+    ) {
+        Text(
+            text = stringResource(id = R.string.about),
+            style = MaterialTheme.typography.h3
+        )
+        Text(
+            text = stringResource(id = dogHobby),
+            style = MaterialTheme.typography.body2
+        )
+    }
+}
+
+
+@Preview
+@Composable
+fun WoofAppPrevew() {
+    WoofTheme(darkTheme = false) {
+        WoofApp()
+    }
+}
 
 @Preview
 @Composable
