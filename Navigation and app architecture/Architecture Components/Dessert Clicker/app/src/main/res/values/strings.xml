@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Dessert Clicker</string>
+    <string name="total_revenue">Total revenue</string>
+    <string name="desert_sold">Desserts sold</string>
+    <string name="share">Share</string>
+</resources>
