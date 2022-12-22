@@ -37,6 +37,28 @@ class OrderViewModel : ViewModel(){
     }
 
     /**
+     * Set the [desiredFlavor] of cupcakes for this order's state.
+     * Only 1 flavor can be selected for the whole order.
+     */
+    fun setFlavor(desiredFlavor: String) {
+        _uiState.update { currentState ->
+            currentState.copy(flavor = desiredFlavor)
+        }
+    }
+
+    /**
+     * Set the [pickupDate] for this order's state and update the price
+     */
+    fun setDate(pickupDate: String) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                date = pickupDate,
+                price = calculatePrice(pickupDate = pickupDate)
+            )
+        }
+    }
+
+    /**
      * Reset the order state
      */
     fun resetOrder() {
