@@ -16,20 +16,19 @@ import androidx.compose.ui.unit.dp
 import com.example.cupcake.R
 import com.example.cupcake.ui.components.FormattedPriceLabel
 
-
 @Composable
 fun SelectOptionScreen(
     subtotal: String,
     options: List<String>,
     onSelectionChanged: (String) -> Unit = {},
-    // TODO: add onCancelButtonClicked
-    // TODO: add onNextButtonClicked
+    onCancelButtonClicked: () -> Unit = {},
+    onNextButtonClicked: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var selectedValue by rememberSaveable { mutableStateOf("") }
     Column(modifier = modifier.padding(16.dp)) {
         options.forEach { item ->
-            Row(
+            Row (
                 modifier = Modifier.selectable(
                     selected = selectedValue == item,
                     onClick = {
@@ -38,7 +37,7 @@ fun SelectOptionScreen(
                     }
                 ),
                 verticalAlignment = Alignment.CenterVertically
-            ) {
+            ){
                 RadioButton(
                     selected = selectedValue == item,
                     onClick = {
@@ -46,7 +45,7 @@ fun SelectOptionScreen(
                         onSelectionChanged(item)
                     }
                 )
-                Text(text = item)
+                Text(item)
             }
         }
         Divider(thickness = 1.dp, modifier = modifier.padding(bottom = 16.dp))
@@ -62,14 +61,16 @@ fun SelectOptionScreen(
         ) {
             OutlinedButton(
                 modifier = Modifier.weight(1f), 
-                onClick = { { /*TODO*/ } }
+                onClick = onCancelButtonClicked
             ) {
                 Text(text = stringResource(id = R.string.cancel))
             }
             
             Button(
                 modifier = Modifier.weight(1f),
-                onClick = {  }
+                // the button is enabled when the user makes a selection
+                enabled = selectedValue.isNotEmpty(),
+                onClick =  onNextButtonClicked
             ) {
                 Text(text = stringResource(id = R.string.next))
             }
