@@ -86,7 +86,7 @@ fun OrderSummaryPreview(){
         orderUiState = OrderUiState(0, "Test", "Test", "$300.00"),
         onCancelButtonClicked = {},
         onSendButtonClicked = { subject: String, summary: String ->
-            
+
         }
     )
 }
