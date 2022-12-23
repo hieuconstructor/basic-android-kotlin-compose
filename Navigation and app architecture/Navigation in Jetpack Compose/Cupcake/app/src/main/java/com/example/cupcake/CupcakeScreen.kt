@@ -2,6 +2,7 @@ package com.example.cupcake
 
 import android.content.Context
 import android.content.Intent
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -26,8 +27,11 @@ import com.example.cupcake.ui.OrderViewModel
 import com.example.cupcake.ui.SelectOptionScreen
 import com.example.cupcake.ui.StartOrderScreen
 
-enum class CupcakeScreen() {
-    Start, Flavor, Pickup, Summary
+enum class CupcakeScreen(@StringRes val title: Int) {
+    Start(title = R.string.app_name),
+    Flavor(title = R.string.choose_flavor),
+    Pickup(title = R.string.choose_pickup_date),
+    Summary(title = R.string.order_summary)
 }
 
 @Composable
@@ -53,10 +57,12 @@ fun CupcakeAppBar(
 
 @Composable
 fun CupcakeApp(
-    modifier: Modifier = Modifier, viewModel: OrderViewModel = viewModel()
+    modifier: Modifier = Modifier,
+    viewModel: OrderViewModel = viewModel(),
+    navController: NavHostController = rememberNavController()
 ) {
     // TODO: Create NavController
-    val navController = rememberNavController()
+//    val navController = rememberNavController()
     // TODO: Get current back stack entry
     val backStackEntry by navController.currentBackStackEntryAsState()
     // TODO: Get the name of the current screen
