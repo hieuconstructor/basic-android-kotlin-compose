@@ -1,10 +1,8 @@
 package com.example.replyapp.ui
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.NavigationRailItem
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Drafts
 import androidx.compose.material.icons.filled.Inbox
@@ -13,16 +11,31 @@ import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.example.replyapp.R
+import com.example.replyapp.data.Email
 import com.example.replyapp.data.MailboxType
+import com.example.replyapp.data.local.LocalAccountsDataProvider
+import com.example.replyapp.ui.utils.ReplyContentType
+import com.example.replyapp.ui.utils.ReplyNavigationType
 
+/**
+ * Composable that displays home screen
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReplyHomeScreen(
+    navigationType: ReplyNavigationType,
+    contentType: ReplyContentType,
     replyUiState: ReplyUiState,
     onTabPressed: (MailboxType) -> Unit,
+    onEmailCardPressed: (Email) -> Unit,
+    onDetailScreenBackPressed: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val navigationItemContentList = listOf(
@@ -47,33 +60,100 @@ fun ReplyHomeScreen(
             text = stringResource(id = R.string.tab_spam)
         )
     )
-    ReplyAppContent(replyUiState = replyUiState , onTabPressed = onTabPressed, navigationItemContentList =  navigationItemContentList)
-}
-
-@Composable
-private fun ReplyAppContent(
-    replyUiState: ReplyUiState,
-    onTabPressed: ((MailboxType) -> Unit),
-    navigationItemContentList: List<NavigationItemContent>,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.inverseOnSurface)
-    ) {
-        ReplyListOnlyContent(
-            replyUiState = replyUiState,
-            modifier = Modifier.weight(1f)
-        )
-        ReplyBottomNavigationBar(
-            currentTab = replyUiState.currentMailbox,
-            onTabPressed = onTabPressed,
-            navigationItemContentList = navigationItemContentList
-        )
+    if (navigationType == ReplyNavigationType.PERMANENT_NAVIGATION_DRAWER) {
+        PermanentNavigationDrawer(
+            drawerContent = {
+                PermanentDrawerSheet(Modifier.width(240.dp)) {
+                    NavigationDrawerContent(
+                        selectedDestination = replyUiState.currentMailbox,
+                        onTabPressed = onTabPressed,
+                        navigationItemContentList = navigationItemContentList
+                    )
+                }
+            },
+        ) {
+            ReplyAppContent(
+                navigationType = navigationType,
+                contentType = contentType,
+                replyUiState = replyUiState,
+                onTabPressed = onTabPressed,
+                onEmailCardPressed = onEmailCardPressed,
+                navigationItemContentList = navigationItemContentList,
+                modifier = modifier
+            )
+        }
+    } else {
+        if (replyUiState.isShowingHomepage) {
+            ReplyAppContent(
+                navigationType = navigationType,
+                contentType = contentType,
+                replyUiState = replyUiState,
+                onTabPressed = onTabPressed,
+                onEmailCardPressed = onEmailCardPressed,
+                navigationItemContentList = navigationItemContentList,
+                modifier = modifier
+            )
+        } else {
+            ReplyDetailsScreen(
+                replyUiState = replyUiState,
+                isFullScreen = true,
+                onBackPressed = onDetailScreenBackPressed,
+                modifier = modifier
+            )
+        }
     }
 }
 
+/**
+ * Composable that displays content at home screen.
+ */
+@Composable
+private fun ReplyAppContent(
+    navigationType: ReplyNavigationType,
+    contentType: ReplyContentType,
+    replyUiState: ReplyUiState,
+    onTabPressed: ((MailboxType) -> Unit),
+    onEmailCardPressed: (Email) -> Unit,
+    navigationItemContentList: List<NavigationItemContent>,
+    modifier: Modifier = Modifier,
+) {
+    Row(modifier = modifier.fillMaxSize()) {
+        AnimatedVisibility(visible = navigationType == ReplyNavigationType.NAVIGATION_RAIL) {
+            ReplyNavigationRail(
+                currentTab = replyUiState.currentMailbox,
+                onTabPressed = onTabPressed,
+                navigationItemContentList = navigationItemContentList
+            )
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.inverseOnSurface)
+        ) {
+            if(contentType == ReplyContentType.LIST_AND_DETAIL) {
+                ReplyListAndDetailContent(
+                    replyUiState = replyUiState,
+                    onEmailCardPressed = onEmailCardPressed,
+                    modifier = Modifier.weight(1f)
+                )
+            } else {
+                ReplyListOnlyContent(
+                    replyUiState = replyUiState,
+                    onEmailCardPressed = onEmailCardPressed,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            AnimatedVisibility(visible = navigationType == ReplyNavigationType.BOTTOM_NAVIGATION) {
+                ReplyBottomNavigationBar(
+                    currentTab = replyUiState.currentMailbox,
+                    onTabPressed = onTabPressed,
+                    navigationItemContentList = navigationItemContentList
+                )
+            }
+        }
+    }
+}
 
 /**
  * Component that displays Navigation Rail
@@ -101,15 +181,17 @@ private fun ReplyNavigationRail(
     }
 }
 
-
+/**
+ * Component that displays Bottom Navigation Bar
+ */
 @Composable
 private fun ReplyBottomNavigationBar(
     currentTab: MailboxType,
-    onTabPressed: ((MailboxType) -> Unit) = {},
+    onTabPressed: ((MailboxType) -> Unit),
     navigationItemContentList: List<NavigationItemContent>,
     modifier: Modifier = Modifier
 ) {
-    NavigationBar(modifier = modifier.fillMaxHeight()) {
+    NavigationBar(modifier = modifier.fillMaxWidth()) {
         for (navItem in navigationItemContentList) {
             NavigationBarItem(
                 selected = currentTab == navItem.mailboxType,
@@ -122,6 +204,68 @@ private fun ReplyBottomNavigationBar(
                 }
             )
         }
+    }
+}
+
+/**
+ * Component that displays Navigation Drawer
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NavigationDrawerContent(
+    selectedDestination: MailboxType,
+    onTabPressed: ((MailboxType) -> Unit),
+    navigationItemContentList: List<NavigationItemContent>,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier
+            .wrapContentWidth()
+            .fillMaxHeight()
+            .background(MaterialTheme.colorScheme.inverseOnSurface)
+            .padding(12.dp)
+    ) {
+        NavigationDrawerHeader(modifier)
+        for (navItem in navigationItemContentList) {
+            NavigationDrawerItem(
+                selected = selectedDestination == navItem.mailboxType,
+                label = {
+                    Text(
+                        text = navItem.text,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                },
+                icon = {
+                    Icon(
+                        imageVector = navItem.icon,
+                        contentDescription = navItem.text
+                    )
+                },
+                colors = NavigationDrawerItemDefaults.colors(
+                    unselectedContainerColor = Color.Transparent
+                ),
+                onClick = { onTabPressed(navItem.mailboxType) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun NavigationDrawerHeader(modifier: Modifier) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        ReplyLogo()
+        ReplyProfileImage(
+            drawableResource = LocalAccountsDataProvider.userAccount.avatar,
+            description = stringResource(id = R.string.profile),
+            modifier = Modifier
+                .size(28.dp)
+        )
     }
 }
 
