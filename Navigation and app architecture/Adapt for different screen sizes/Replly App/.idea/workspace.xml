@@ -5,15 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6b8067b2-8d82-400c-94a4-797257022b8e" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../Reply App/app/src/main/java/com/example/replyapp/ui/ReplyApp.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Navigation in Jetpack Compose/Lunch Tray/app/src/main/java/com/example/lunchtray/ui/EntreeMenuItem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../../Navigation in Jetpack Compose/Lunch Tray/app/src/main/java/com/example/lunchtray/ui/EntreeMenuItem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[C:\Users\hieuc\.android\avd\Pixel_2_API_28.avd]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[192.168.95.101:5555]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -38,6 +37,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
     <property name="cidr.known.project.marker" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Reply App" />
   </component>
   <component name="RunManager">
     <configuration name="app" type="AndroidRunConfigurationType" factoryName="Android App">
