@@ -30,5 +30,6 @@ fun EntreeMenuPreview() {
         options = DataSource.entreeMenuItems,
         onCancelButtonClicked = {},
         onNextButtonClicked = {},
-        onSelectionChanged = {})
+        onSelectionChanged = {}
+    )
 }
